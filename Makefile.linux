@@ -1,21 +1,15 @@
 # The source klystrack song file
 
-OS:=$(shell uname)
-ifeq ($(OS),Linux)
-$(error Wrong Makefile, use Makefile.linux instead)
-endif
-
-SONGFILE ?= song.kt
+SONGFILE ?= Paranoimia_Suntronic.kt
 
 # The resulting binary will be written to these two files
 
-EXECFILE ?= bin/song.exe
-COMPRESSEDEXEC ?= bin/song_compressed.exe
+EXECFILE ?= bin/song.elf
 
 # klystron PROFILE should be "size" for size optimized binary but you can change it here
 
 PROFILE = size
-EXTFLAGS = -nostdlib -s -DUSESDLMUTEXES -DSTEREOOUTPUT -DUSENATIVEAPIS
+EXTFLAGS = -DUSESDLMUTEXES -DSTEREOOUTPUT #-nostdlib -s -DUSENATIVEAPIS
 
 # Uncomment the below line to enable the WAV writer
 
@@ -32,38 +26,30 @@ EXTFLAGS += -DENABLE_WAV_WRITER=1
 	-DCYD_DISABLE_VIBRATO -DCYD_DISABLE_PWM -DCYD_DISABLE_ENVELOPE \
 	-DCYD_DISABLE_INACCURACY
 
-# You need kkrunchy for the compressed binary (http://www.farbrausch.de/~fg/kkrunchy/)
-# If it's not available, the step will be skipped and the song will not be compressed
-
-KKRUNCHY := kkrunchy_k7.exe -best
 MAKE := make -j4
-LIBS := -lwinmm -lmsvcrt -lgcc -lkernel32 -luser32
+LIBS := -lm `(sdl2-config --libs)` -lSDL2_mixer -lncurses
 EXTFLAGS += $(LIBS)
 
-all: $(EXECFILE) $(COMPRESSEDEXEC)
+all: $(EXECFILE)
 	@echo "Song binary compiled from '$(SONGFILE)'"
 	@echo " - Binary written to '$(EXECFILE)' ($(shell ls $(EXECFILE) -l | awk '{print $$5}') bytes)"
-	@echo " - Compressed binary written to '$(COMPRESSEDEXEC)' ($(shell ls $(COMPRESSEDEXEC) -l | awk '{print $$5}') bytes)"
 
-$(COMPRESSEDEXEC): $(EXECFILE)
-	@cp $(EXECFILE) $(COMPRESSEDEXEC)
-	@$(KKRUNCHY) $(COMPRESSEDEXEC)
 
-$(EXECFILE): src/player.c temp/data.inc
+$(EXECFILE): src/player_linux.c temp/data.inc
 	@mkdir -p bin
 	@$(MAKE) -C ./klystron ksnd CFG=$(PROFILE) EXTFLAGS="$(EXTFLAGS)"
-	@gcc -Os $(EXTFLAGS) -o $(EXECFILE) src/player.c -lksndstatic -Wall $(LIBS) -I ./klystron/src/lib -L ./klystron/bin.$(PROFILE)
+	@gcc -Os $(EXTFLAGS) -o $(EXECFILE) src/player_linux.c -lksndstatic -Wall $(LIBS) -I ./klystron/src/lib -L ./klystron/bin.$(PROFILE)
 
-temp/data.inc: temp/bin2c.exe $(SONGFILE)
+temp/data.inc: temp/bin2c.elf $(SONGFILE)
 	@mkdir -p temp
 	@echo "static unsigned char data[] = {" > temp/data.inc
-	@temp/bin2c.exe $(SONGFILE) >> temp/data.inc
+	@temp/bin2c.elf $(SONGFILE) >> temp/data.inc
 	@echo "};" >> temp/data.inc
 
 clean:
 	@$(MAKE) -C ./klystron clean
-	@rm -rf bin temp $(COMPRESSEDEXEC) $(EXECFILE)
+	@rm -rf bin temp $(EXECFILE)
 
-temp/bin2c.exe: src/bin2c.c
+temp/bin2c.elf: src/bin2c.c
 	@mkdir -p temp
-	@gcc -Wall src/bin2c.c -o temp/bin2c.exe
+	@gcc -Wall src/bin2c.c -o temp/bin2c.elf

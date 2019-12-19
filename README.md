@@ -2,6 +2,9 @@
 
 This is a boilerplate for creating self-playing klystrack songs. The result is a binary that will use the the Windows native API to play music with libksnd. So far only Windows binaries are supported.
 
+**NOTE for linux users**
+On this repo, i've added Linux support , for wav writing for the moment.
+
 ## Required stuff
 
 * GCC, make etc.
@@ -12,9 +15,10 @@ This is a boilerplate for creating self-playing klystrack songs. The result is a
 1. Clone this repo along with the klystron submodule (`git clone --recurse-submodules https://github.com/kometbomb/klystrack-executable-music`)
 2. Copy your song file in the directory or specify the path to it in the enviroment variable SONGFILE
 3. `make` (or e.g. `SONGFILE=/path/to/my_song.kt make`)
+   `make -f Makefile.linux` for Linux version
 4. You should have your executable file in the `bin/` directory along with the kkrunchy compressed version
 
-Feel free to edit `src/player.c` for your needs.
+Feel free to edit `src/player.c` or `src/player_linux.c` for your needs.
 
 ## WAV writer
 
