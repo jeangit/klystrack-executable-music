@@ -28,6 +28,7 @@ EXTFLAGS += -DENABLE_WAV_WRITER=1
 
 MAKE := make -j4
 LIBS := -lm `(sdl2-config --libs)` -lSDL2_mixer -lncurses
+INCS := `(sdl2-config --cflags)` -Iklystron/src
 EXTFLAGS += $(LIBS)
 
 all: $(EXECFILE)
@@ -38,7 +39,7 @@ all: $(EXECFILE)
 $(EXECFILE): src/player_linux.c temp/data.inc
 	@mkdir -p bin
 	@$(MAKE) -C ./klystron ksnd CFG=$(PROFILE) EXTFLAGS="$(EXTFLAGS)"
-	@gcc -Os $(EXTFLAGS) -o $(EXECFILE) src/player_linux.c -lksndstatic -Wall $(LIBS) -I ./klystron/src/lib -L ./klystron/bin.$(PROFILE)
+	@gcc -Os $(EXTFLAGS) -o $(EXECFILE) src/player_linux.c -lksndstatic -Wall $(LIBS) -I ./klystron/src/lib -L ./klystron/bin.$(PROFILE) $(INCS)
 
 temp/data.inc: temp/bin2c.elf $(SONGFILE)
 	@mkdir -p temp
