@@ -79,8 +79,8 @@ int main(int argc, char **argv)
   // Enable wav writer if output file is specified
 
   //  if (sscanf(GetCommandLine(), "%*s %79s", output_file) == 1)
-  if (argc > 1) {
-    output_file = argv[1];
+  if (argc > 2) {
+    output_file = argv[2];
     is_wave_writer = 1;
     fprintf(stderr, "will output to: %s\n", output_file);
   } else {
